@@ -19,16 +19,19 @@ jobs:
         shell: bash
         env:
           IVY2_CREDENTIALS: ${{secrets.IVY2_CREDENTIALS}}
-      - name: Run tests
-        run: sbt 'test' sbt 'set packageName in Universal := "archive"' 'universal:packageZipTarball'
+      - name: Build archive
+        run: sbt 'test' 'set packageName in Universal := "archive"' 'universal:packageZipTarball'
       - uses: actions/upload-artifact@v2
         with:
           name: igeolise-downloader-status-archive
           path: target/universal/archive.tgz
   deploy:
     runs-on: ubuntu-latest
-    container: igeolise/ansible:latest
     steps:
+      - uses: azure/docker-login@v1
+        with:
+          username: ${{secrets.DOCKER_HUB_USER}}
+          password: ${{secrets.DOCKER_HUB_PASSWORD}}
       - name: Download built archive
         uses: actions/download-artifact@v1
         with:
@@ -39,3 +42,9 @@ jobs:
           echo $ANSIBLE_VAULT_PASSWORD > ~/.ansible/igeolise-secrets/vault-psw
         env:
           ANSIBLE_VAULT_PASSWORD: ${{secrets.ANSIBLE_VAULT_PASSWORD}}
+      - name: Docker stuff
+        shell: bash
+        run: |
+          cd igeolise-ansible
+          ls -l
+        uses: docker://igeolise/ansible:latest
