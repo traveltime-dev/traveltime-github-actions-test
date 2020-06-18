@@ -43,8 +43,6 @@ jobs:
         env:
           ANSIBLE_VAULT_PASSWORD: ${{secrets.ANSIBLE_VAULT_PASSWORD}}
       - name: Docker stuff
-        shell: bash
-        run: |
-          cd igeolise-ansible
-          ls -l
         uses: docker://igeolise/ansible:latest
+        with:
+          args: /bin/bash -c "cd igeolise-ansible; ls -l"
